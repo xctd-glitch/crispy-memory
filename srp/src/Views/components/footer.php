@@ -8,6 +8,6 @@
     </div>
 </footer>
 
-<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" nonce="<?= htmlspecialchars($cspNonce ?? '', ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5, 'UTF-8'); ?>" defer></script>
 </body>
 </html>
