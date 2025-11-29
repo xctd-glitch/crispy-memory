@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Offline | SRP Traffic Control</title>
+    <meta name="theme-color" content="#18181b">
+    <meta name="color-scheme" content="dark light">
+    <meta name="apple-mobile-web-app-title" content="SRP - Device-aware routing">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" href="/assets/icons/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+    <link rel="shortcut icon" href="/assets/icons/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+
+    <!-- Tailwind via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script nonce="__CSP_NONCE__">
+        tailwind.config = {
+            theme: {
+                container: {
+                    center: true,
+                    padding: "1.25rem",
+                    screens: { "2xl": "1400px" }
+                },
+                extend: {
+                    colors: {
+                        border: "hsl(240 5.9% 90%)",
+                        input: "hsl(240 5.9% 90%)",
+                        ring: "hsl(240 5.9% 10%)",
+                        background: "hsl(210 20% 97%)",
+                        foreground: "hsl(240 10% 3.9%)",
+                        primary: {
+                            DEFAULT: "hsl(240 5.9% 10%)",
+                            foreground: "hsl(0 0% 98%)"
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(240 4.8% 95.9%)",
+                            foreground: "hsl(240 5.9% 10%)"
+                        },
+                        destructive: {
+                            DEFAULT: "hsl(0 84.2% 60.2%)",
+                            foreground: "hsl(0 0% 98%)"
+                        },
+                        muted: {
+                            DEFAULT: "hsl(240 4.8% 95.9%)",
+                            foreground: "hsl(240 3.8% 46.1%)"
+                        },
+                        accent: {
+                            DEFAULT: "hsl(240 4.8% 95.9%)",
+                            foreground: "hsl(240 5.9% 10%)"
+                        },
+                        popover: {
+                            DEFAULT: "hsl(0 0% 100%)",
+                            foreground: "hsl(240 10% 3.9%)"
+                        },
+                        card: {
+                            DEFAULT: "hsl(0 0% 100%)",
+                            foreground: "hsl(240 10% 3.9%)"
+                        }
+                    },
+                    borderRadius: {
+                        lg: "0.3rem",
+                        md: "calc(0.3rem - 2px)",
+                        sm: "calc(0.3rem - 4px)"
+                    }
+                }
+            }
+        };
+    </script>
+
+    <link rel="stylesheet" type="text/css" href="/assets/style.css" id="preload-stylesheet"/>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --background: hsl(210 20% 97%);
+            --foreground: hsl(240 10% 3.9%);
+
+            --card-bg: hsl(0 0% 100%);
+            --card-foreground: var(--foreground);
+
+            --border: hsl(240 5.9% 90%);
+            --input: hsl(240 5.9% 90%);
+            --ring: hsl(240 5.9% 10%);
+
+            --primary: hsl(240 5.9% 10%);
+            --primary-foreground: hsl(0 0% 98%);
+
+            --secondary: hsl(240 4.8% 95.9%);
+            --secondary-foreground: hsl(240 5.9% 10%);
+
+            --muted: hsl(240 4.8% 95.9%);
+            --muted-foreground: hsl(240 3.8% 46.1%);
+
+            --destructive: hsl(0 84.2% 60.2%);
+            --destructive-foreground: hsl(0 0% 98%);
+
+            --primary-soft-bg: rgba(15, 23, 42, 0.04);
+        }
+
+        html,
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            font-smooth: always;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+        }
+
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: hsl(240 4.8% 96.5%);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: hsl(240 5.9% 88%);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: hsl(240 3.8% 46.1%);
+        }
+
+        .text-muted-foreground {
+            color: var(--muted-foreground);
+        }
+
+        .bg-main {
+            background-color: var(--background);
+        }
+
+        .bg-card {
+            background-color: var(--card-bg);
+        }
+
+        .border-border {
+            border-color: var(--border);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            border-radius: 0.3rem;
+            font-size: .8125rem;
+            font-weight: 500;
+            padding: 0.45rem 0.9rem;
+            border-width: 1px;
+            border-style: solid;
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            transition:
+                background-color 150ms ease-out,
+                color 150ms ease-out,
+                border-color 150ms ease-out;
+        }
+
+        .btn:disabled {
+            opacity: .5;
+            pointer-events: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+            border-color: transparent;
+        }
+
+        .btn-primary:hover {
+            background-color: hsl(240 5.9% 14%);
+        }
+
+        .btn-ghost {
+            background-color: transparent;
+            color: var(--foreground);
+            border-color: var(--border);
+        }
+
+        .btn-ghost:hover {
+            background-color: var(--secondary);
+            color: var(--secondary-foreground);
+        }
+
+        .btn-link {
+            border: none;
+            background: transparent;
+            color: var(--muted-foreground);
+            font-size: .75rem;
+            text-decoration: none;
+            text-underline-offset: 3px;
+        }
+
+        .btn-link:hover {
+            color: var(--foreground);
+            text-decoration: underline;
+        }
+
+        /* Card - animasi warna saja, tanpa shadow & tanpa gerak */
+        .card {
+            border-radius: 0.3rem;
+            border-width: 1px;
+            border-style: solid;
+            border-color: var(--border);
+            background-color: var(--card-bg);
+            color: var(--card-foreground);
+            transition:
+                background-color 150ms ease-out,
+                border-color 150ms ease-out;
+        }
+
+        .card:hover {
+            background-color: var(--primary-soft-bg);
+            border-color: var(--primary);
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            border-radius: 0.3rem;
+            border-width: 1px;
+            border-style: solid;
+            border-color: var(--border);
+            background-color: var(--secondary);
+            color: var(--secondary-foreground);
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 0.15rem 0.55rem;
+        }
+
+        .badge-soft {
+            background-color: var(--muted);
+            color: var(--muted-foreground);
+        }
+
+        .badge-pill {
+            border-radius: .3rem;
+        }
+
+        .status-dot {
+            width: 0.45rem;
+            height: 0.45rem;
+            border-radius: 999px;
+            background-color: #16a34a;
+        }
+
+        .status-dot--muted {
+            background-color: #9ca3af;
+        }
+
+        .status-dot-error {
+            background-color: #f97373;
+        }
+
+        /* Offline pill style used as "routing engine" indicator */
+        .offline-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            border-radius: .3rem;
+            background-color: var(--muted);
+            color: var(--muted-foreground);
+            padding: 0.2rem 0.65rem;
+            font-size: 0.7rem;
+        }
+
+        .offline-pill span {
+            font-weight: 500;
+        }
+
+        /* Subtle divider */
+        .divider {
+            height: 1px;
+            width: 100%;
+            background-color: var(--border);
+        }
+
+        /* Hero title */
+        .offline-shell-title {
+            letter-spacing: -0.03em;
+        }
+
+        /* Simple list (if needed later) */
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--muted-foreground);
+        }
+
+        .feature-bullet {
+            width: 0.45rem;
+            height: 0.45rem;
+            border-radius: 999px;
+            background-color: var(--primary);
+        }
+
+        /* Meta grid */
+        .meta-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+            gap: 0.5rem 1rem;
+        }
+
+        @media (max-width: 640px) {
+            .meta-grid {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-main font-sans antialiased text-sm flex flex-col">
+
+<header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div class="flex h-12 max-w-4xl mx-auto items-center px-5">
+        <div class="flex items-center space-x-2">
+            <img src="/assets/icons/fox.svg" alt="Fox head logo" class="h-8 w-8" width="32" height="32">
+            <div class="flex flex-col leading-tight">
+                <span class="text-sm font-semibold tracking-tight">Smart Redirect Platform</span>
+                <span class="text-[11px] text-muted-foreground">
+                    No "smart" buzzword without actual routing logic.
+                </span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="flex-1 flex items-start pt-4 pb-8 md:pt-10 md:pb-12">
+    <div class="container">
+        <div class="flex justify-center">
+            <!-- OFFLINE PANEL -->
+            <div class="card max-w-xl w-full px-4 py-4 sm:px-6 sm:py-6">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-card border border-border">
+                            <!-- Simple offline icon -->
+                            <svg viewBox="0 0 24 24" class="w-4 h-4 text-muted-foreground" aria-hidden="true">
+                                <path fill="currentColor"
+                                      d="M12 4a9 9 0 0 0-9 9h2a7 7 0 0 1 12.07-4.9l1.43-1.43A9 9 0 0 0 12 4zm0 4a5 5 0 0 0-5 5h2a3 3 0 0 1 5.12-2.12l1.43-1.43A5 5 0 0 0 12 8zm-1 5.27L8.28 16H9v1a2 2 0 0 0 2 2h2v-2h-2v-1h.72L11 13.27z"/>
+                            </svg>
+                        </div>
+                        <div class="flex flex-col leading-tight">
+                            <span class="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+                                Smart Redirect Platform
+                            </span>
+                            <span class="text-sm font-medium">
+                                SRP Offline Mode
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="offline-pill">
+                        <span class="status-dot status-dot-error"></span>
+                        <span>Offline &middot; using cached shell</span>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div class="mb-4">
+                    <h1 class="offline-shell-title text-xl sm:text-2xl font-semibold mb-2">
+                        You're offline, but the shell is still here.
+                    </h1>
+                    <p class="text-sm text-muted-foreground">
+                        Live routing, logs, and redirects need a network connection.
+                        This page is cached so users see something predictable instead
+                        of a broken journey.
+                    </p>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <button class="btn btn-primary" type="button" onclick="location.reload();">
+                        Try again
+                    </button>
+                    <a href="/" class="btn btn-ghost">
+                        Dashboard
+                    </a>
+                    <button type="button" class="btn-link">
+                        Keep calm, fix your Wi-Fi.
+                    </button>
+                </div>
+
+                <div class="divider mb-4"></div>
+
+                <!-- Meta info -->
+                <div class="meta-grid mb-3 text-xs text-muted-foreground">
+                    <div>
+                        <div class="font-medium text-[0.7rem] uppercase tracking-[0.14em] mb-1">
+                            App status
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <span class="status-dot status-dot-error"></span>
+                            <span>Offline &middot; using cached shell</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="font-medium text-[0.7rem] uppercase tracking-[0.14em] mb-1">
+                            Cached content
+                        </div>
+                        <div>
+                            <span>Offline page, core assets &amp; minimal styles.</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="font-medium text-[0.7rem] uppercase tracking-[0.14em] mb-1">
+                            What still works
+                        </div>
+                        <div>
+                            <span>Static UI, app shell, and any cached routes.</span>
+                        </div>
+                    </div> 
+                    <div>
+                        <div class="font-medium text-[0.7rem] uppercase tracking-[0.14em] mb-1">
+                            Next step
+                        </div>
+                        <div>
+                            <span>Restore connection, then reload this page.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="divider mb-3"></div>
+
+                <!-- Footer inside card -->
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 text-[0.7rem] text-muted-foreground">
+                    <span>SRP Smart Redirect Platform &middot; Offline shell.</span>
+                    <span>Paired with <code class="px-1 py-0.5 bg-muted rounded">welcome</code> for normal state.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</body>
+</html>

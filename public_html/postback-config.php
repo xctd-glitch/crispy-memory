@@ -1,0 +1,13 @@
+<?php
+declare(strict_types=1);
+
+// Portable path untuk shared hosting: dirname(__DIR__) = /home/username
+require_once dirname(__DIR__) . '/srp/src/bootstrap.php';
+
+use SRP\Controllers\PostbackController;
+use SRP\Middleware\Session;
+
+// Start session for CSRF token validation
+Session::start();
+
+PostbackController::handleRequest();

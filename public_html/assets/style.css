@@ -1,0 +1,561 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        [x-cloak] {
+            display: none;
+        }
+
+        html,
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            font-smooth: always;
+        }
+
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: hsl(240 4.8% 96.5%);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: hsl(240 5.9% 88%);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: hsl(240 3.8% 46.1%);
+        }
+
+        :root {
+            /* ==================== BASE PALETTE - MUTED COLORS ==================== */
+
+            /* Background & Surface */
+            --background: hsl(210 20% 97%);           /* Background halaman (Tailwind: colors.background) */
+            --foreground: hsl(240 10% 3.9%);          /* Teks utama (Tailwind: colors.foreground) */
+            --page-bg: var(--background);             /* Alias untuk background */
+
+            /* Card & Panel */
+            --card: hsl(0 0% 100%);                   /* Card, panel, surface (Tailwind: colors.card.DEFAULT) */
+            --card-foreground: var(--foreground);     /* Teks di card (Tailwind: colors.card.foreground) */
+            --card-bg: var(--card);                   /* Alias untuk card */
+
+            /* Border & Input */
+            --border: hsl(240 5.9% 90%);              /* Border umum (Tailwind: colors.border) */
+            --input: hsl(240 5.9% 90%);               /* Border input (Tailwind: colors.input) */
+            --ring: hsl(240 5.9% 10%);                /* Focus ring (Tailwind: colors.ring) */
+            --border-color: var(--border);            /* Alias untuk border */
+            --ring-color: var(--ring);                /* Alias untuk ring */
+
+            /* ==================== PRIMARY - BRAND, DASHBOARD, BUTTON UTAMA ==================== */
+            --primary: hsl(240 5.9% 10%);             /* Button utama, link aksen (Tailwind: colors.primary.DEFAULT) */
+            --primary-foreground: hsl(0 0% 98%);      /* Teks/icon di atas primary (Tailwind: colors.primary.foreground) */
+
+            /* ==================== SECONDARY - HOVER, BG GRADIENT, OVERLAY ==================== */
+            --secondary: hsl(240 4.8% 95.9%);         /* Button ghost, badge soft (Tailwind: colors.secondary.DEFAULT) */
+            --secondary-foreground: hsl(240 5.9% 10%);/* Teks/icon di atas secondary (Tailwind: colors.secondary.foreground) */
+
+            /* ==================== MUTED - TEKS SECONDARY, DESKRIPSI, LABEL ==================== */
+            --muted: hsl(240 4.8% 95.9%);             /* Background muted (Tailwind: colors.muted.DEFAULT) */
+            --muted-foreground: hsl(240 3.8% 46.1%);  /* Teks secondary, deskripsi (Tailwind: colors.muted.foreground) */
+
+            /* ==================== DESTRUCTIVE - ERROR, DELETE ==================== */
+            --destructive: hsl(0 84.2% 60.2%);        /* Tombol Delete, status error (Tailwind: colors.destructive.DEFAULT) */
+            --destructive-foreground: hsl(0 0% 98%);  /* Teks/icon di atas destructive (Tailwind: colors.destructive.foreground) */
+
+            /* ==================== POPOVER - DROPDOWN, TOOLTIP ==================== */
+            --popover: var(--card);                   /* Dropdown/popover background (Tailwind: colors.popover.DEFAULT) */
+            --popover-foreground: var(--foreground);  /* Teks di popover (Tailwind: colors.popover.foreground) */
+            --popover-bg: var(--popover);             /* Alias untuk popover */
+
+            /* ==================== ACCENT & EFFECTS ==================== */
+            --primary-soft-bg: rgba(15, 23, 42, 0.04);    /* Background fade primary light */
+            --primary-strong-bg: rgba(15, 23, 42, 0.08);  /* Background fade primary strong */
+
+            /* ==================== LEGACY ALIASES (untuk backward compatibility) ==================== */
+            --text-color: var(--foreground);
+            --text-muted: var(--muted-foreground);
+            --input-border: var(--input);
+        }
+
+        /* ==================== GLOBAL BASE STYLES ==================== */
+
+        body {
+            color: var(--foreground);
+            background-color: var(--background);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--foreground);
+        }
+
+        p {
+            color: var(--muted-foreground);
+        }
+
+        /* ==================== TEXT COLOR UTILITIES ==================== */
+
+        .text-foreground {
+            color: var(--foreground);
+        }
+
+        .text-primary {
+            color: var(--primary);
+        }
+
+        .text-primary-foreground {
+            color: var(--primary-foreground);
+        }
+
+        .text-secondary-foreground {
+            color: var(--secondary-foreground);
+        }
+
+        .text-muted-foreground,
+        .text-muted {
+            color: var(--muted-foreground);
+        }
+
+        .text-card-foreground {
+            color: var(--card-foreground);
+        }
+
+        .text-destructive {
+            color: var(--destructive);
+        }
+
+        .text-destructive-foreground {
+            color: var(--destructive-foreground);
+        }
+
+        /* ==================== BACKGROUND COLOR UTILITIES ==================== */
+
+        .bg-background,
+        .bg-main {
+            background-color: var(--background);
+        }
+
+        .bg-primary {
+            background-color: var(--primary);
+        }
+
+        .bg-secondary {
+            background-color: var(--secondary);
+        }
+
+        .bg-muted {
+            background-color: var(--muted);
+        }
+
+        .bg-card {
+            background-color: var(--card);
+        }
+
+        .bg-popover {
+            background-color: var(--popover);
+        }
+
+        .bg-destructive {
+            background-color: var(--destructive);
+        }
+
+        /* Fade backgrounds (accent & effects) */
+        .bg-primary-fade {
+            background-color: var(--primary-soft-bg);
+        }
+
+        .bg-primary-fade-strong {
+            background-color: var(--primary-strong-bg);
+        }
+
+        /* ==================== BORDER UTILITIES ==================== */
+
+        .border-border,
+        .border {
+            border-color: var(--border);
+        }
+
+        .border-input {
+            border-color: var(--input);
+        }
+
+        .border-primary {
+            border-color: var(--primary);
+        }
+
+        /* ==================== RING UTILITIES (focus states) ==================== */
+
+        .ring-ring {
+            --tw-ring-color: var(--ring);
+        }
+
+        .ring-offset-background {
+            --tw-ring-offset-color: var(--background);
+        }
+
+        /* ==================== BUTTON COMPONENTS ==================== */
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            border-radius: .3125rem;
+            font-size: .8125rem;
+            font-weight: 500;
+            transition:
+                background-color .15s ease,
+                color .15s ease,
+                border-color .15s ease,
+                box-shadow .15s ease;
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+        }
+
+        .btn:focus-visible {
+            box-shadow: 0 0 0 2px var(--ring);
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+        }
+
+        .btn:disabled {
+            pointer-events: none;
+            opacity: .5;
+        }
+
+        /* Button Primary */
+        .btn-default,
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+            border: 1px solid transparent;
+        }
+
+        .btn-default:hover,
+        .btn-primary:hover {
+            background-color: hsl(240 5.9% 14%);
+        }
+
+        /* Button Destructive */
+        .btn-destructive {
+            background-color: var(--destructive);
+            color: var(--destructive-foreground);
+            border: 1px solid transparent;
+        }
+
+        .btn-destructive:hover {
+            background-color: hsl(0 84.2% 55%);
+        }
+
+        /* Button Outline */
+        .btn-outline {
+            border: 1px solid var(--border);
+            background-color: transparent;
+            color: var(--foreground);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--secondary);
+            color: var(--secondary-foreground);
+        }
+
+        /* Button Secondary */
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--secondary-foreground);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: hsl(240 4.8% 92%);
+        }
+
+        /* Button Ghost */
+        .btn-ghost {
+            background-color: transparent;
+            color: var(--foreground);
+            border: 1px solid transparent;
+        }
+
+        .btn-ghost:hover {
+            background-color: var(--secondary);
+            color: var(--secondary-foreground);
+        }
+
+        /* Button Link */
+        .btn-link {
+            color: var(--primary);
+            text-decoration: none;
+            text-underline-offset: 4px;
+            background-color: transparent;
+            border: none;
+        }
+
+        .btn-link:hover {
+            text-decoration: underline;
+        }
+
+        .btn-sm {
+            height: 1.75rem;
+            border-radius: .3125rem;
+            padding-inline: .6rem;
+            font-size: .75rem;
+        }
+
+        .btn-default-size {
+            height: 2rem;
+            padding-inline: .9rem;
+            padding-block: .35rem;
+        }
+
+        .btn-lg {
+            height: 2.25rem;
+            border-radius: .3125rem;
+            padding-inline: 1.5rem;
+        }
+
+        .btn-icon {
+            height: 2rem;
+            width: 2rem;
+        }
+
+        /* ==================== CARD COMPONENTS ==================== */
+
+        .card {
+            border-radius: .375rem;
+            border: 1px solid var(--border);
+            background-color: var(--card);
+            color: var(--card-foreground);
+        }
+
+        /* ==================== INPUT & FORM COMPONENTS ==================== */
+
+        .input {
+            display: flex;
+            height: 2rem;
+            width: 100%;
+            border-radius: .3125rem;
+            border: 1px solid var(--input);
+            background-color: transparent;
+            padding-inline: .65rem;
+            padding-block: .2rem;
+            font-size: .8125rem;
+            color: var(--foreground);
+        }
+
+        .input::placeholder {
+            color: var(--muted-foreground);
+        }
+
+        .input:focus-visible {
+            outline: 2px solid transparent;
+            box-shadow: 0 0 0 2px var(--ring);
+        }
+
+        .input:disabled {
+            cursor: not-allowed;
+            opacity: .5;
+        }
+
+        .textarea {
+            display: flex;
+            min-height: 150px;
+            max-height: 200px;
+            height: 150px;
+            text-transform: uppercase;
+            width: 100%;
+            border-radius: .3125rem;
+            border: 1px solid var(--input);
+            background-color: transparent;
+            padding: .4rem .65rem;
+            font-size: .8125rem;
+            color: var(--foreground);
+        }
+
+        .textarea::placeholder {
+            color: var(--muted-foreground);
+        }
+
+        .textarea:focus-visible {
+            outline: 2px solid transparent;
+            box-shadow: 0 0 0 2px var(--ring);
+        }
+
+        .textarea:disabled {
+            cursor: not-allowed;
+            opacity: .5;
+        }
+
+        /* ==================== BADGE COMPONENTS ==================== */
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: .3125rem;
+            border-width: 1px;
+            border-style: solid;
+            padding-inline: .5rem;
+            padding-block: .1rem;
+            font-size: .7rem;
+            font-weight: 600;
+        }
+
+        .badge-default {
+            border-color: transparent;
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .badge-secondary {
+            border-color: transparent;
+            background-color: var(--secondary);
+            color: var(--secondary-foreground);
+        }
+
+        .badge-destructive {
+            border-color: transparent;
+            background-color: var(--destructive);
+            color: var(--destructive-foreground);
+        }
+
+        .badge-outline {
+            border-color: var(--border);
+            background-color: transparent;
+            color: var(--foreground);
+        }
+
+        /* ==================== SEPARATOR / DIVIDER ==================== */
+
+        .separator {
+            flex-shrink: 0;
+            background-color: var(--border);
+            height: 1px;
+            width: 100%;
+        }
+
+        /* ==================== ALERT / NOTIFICATION COMPONENTS ==================== */
+
+        .alert {
+            display: flex;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            border-width: 1px;
+            font-size: 0.875rem;
+        }
+
+        .alert-info {
+            background-color: hsl(214 100% 97%);
+            border-color: hsl(214 100% 85%);
+            color: hsl(214 100% 25%);
+        }
+
+        .alert-success {
+            background-color: hsl(142 76% 96%);
+            border-color: hsl(142 76% 80%);
+            color: hsl(142 76% 25%);
+        }
+
+        .alert-warning {
+            background-color: hsl(48 100% 96%);
+            border-color: hsl(48 100% 80%);
+            color: hsl(32 95% 30%);
+        }
+
+        .alert-error,
+        .alert-destructive {
+            background-color: hsl(0 86% 97%);
+            border-color: hsl(0 86% 85%);
+            color: hsl(0 74% 42%);
+        }
+
+        /* ==================== UTILITY CLASSES ==================== */
+
+        .up-text {
+            text-transform: uppercase;
+        }
+
+        .scroll-logs {
+            scrollbar-width: thin; /* Firefox */
+        }
+
+        .scroll-logs::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        /* ==================== SMOOTH TRANSITIONS FOR AUTO-REFRESH ==================== */
+
+        /* Smooth transitions for all data updates */
+        [x-data] {
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        /* Card hover states */
+        .card {
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Table row smooth updates */
+        tbody tr {
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+        }
+
+        /* Badge and status indicator smooth changes */
+        .badge,
+        .badge-default,
+        .badge-secondary,
+        .badge-outline {
+            transition: all 0.2s ease;
+        }
+
+        /* Number/stat counters smooth updates */
+        .text-xl,
+        .text-2xl,
+        .font-semibold {
+            transition: color 0.2s ease, transform 0.1s ease;
+        }
+
+        /* Input smooth interactions */
+        .input,
+        .textarea {
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        /* Alpine x-show smooth animations */
+        [x-cloak] {
+            display: none !important;
+        }
+
+        /* Fade animation for Alpine transitions */
+        .fade-enter-active,
+        .fade-leave-active {
+            transition: opacity 0.3s ease;
+        }
+
+        .fade-enter-from,
+        .fade-leave-to {
+            opacity: 0;
+        }
+
+        /* Pulse animation for status indicators */
+        @keyframes subtle-pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        .animate-subtle-pulse {
+            animation: subtle-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }

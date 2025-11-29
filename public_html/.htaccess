@@ -1,0 +1,487 @@
+# ==============================================================================
+# Smart Redirect Platform (SRP) - Public .htaccess
+# ==============================================================================
+# Apache configuration for optimal performance and security
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# REWRITE ENGINE
+# ------------------------------------------------------------------------------
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # ------------------------------------------------------------------------------
+    # HTTPS REDIRECTION (Enable in production)
+    # ------------------------------------------------------------------------------
+
+    # Force HTTPS (enabled for production)
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+    # ------------------------------------------------------------------------------
+    # WWW REDIRECTION (Optional)
+    # ------------------------------------------------------------------------------
+
+    # Redirect www to non-www (uncomment if needed)
+    # RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+    # RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+    # OR redirect non-www to www (uncomment if needed)
+    # RewriteCond %{HTTP_HOST} !^www\. [NC]
+    # RewriteCond %{HTTP_HOST} !^localhost$ [NC]
+    # RewriteRule ^(.*)$ https://www.%{HTTP_HOST}/$1 [R=301,L]
+
+    # ------------------------------------------------------------------------------
+    # API ENDPOINTS (Skip front controller for API files)
+    # ------------------------------------------------------------------------------
+
+    # Allow direct access to API endpoints
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteCond %{REQUEST_URI} \.(php)$ [NC]
+    RewriteRule ^ - [L]
+
+    # Allow direct access to JSON files (manifest.json, etc.)
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteCond %{REQUEST_URI} \.(json)$ [NC]
+    RewriteRule ^ - [L]
+
+    # ------------------------------------------------------------------------------
+    # STATIC FILES (Skip rewrite for existing files)
+    # ------------------------------------------------------------------------------
+
+    # If the file exists, serve it directly
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # If the directory exists, serve it directly
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # ------------------------------------------------------------------------------
+    # FRONT CONTROLLER (Route everything else to index.php)
+    # ------------------------------------------------------------------------------
+
+    # Route all other requests to index.php
+    # RewriteRule ^ index.php [L]
+
+    # ------------------------------------------------------------------------------
+    # SECURITY REWRITES
+    # ------------------------------------------------------------------------------
+
+    # Block access to hidden files and directories
+    RewriteCond %{REQUEST_URI} "!(^|/)\.well-known/([^./]+\.php|[^./]+/)" [NC]
+    RewriteCond %{SCRIPT_FILENAME} -d [OR]
+    RewriteCond %{SCRIPT_FILENAME} -f
+    RewriteRule "(^|/)\." - [F]
+
+    # Block access to backup and source files
+    RewriteRule "\.(bak|backup|swp|old|tmp|log|sql|git|svn)$" - [F]
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# SECURITY HEADERS
+# ------------------------------------------------------------------------------
+
+<IfModule mod_headers.c>
+    # Remove server information
+    Header unset Server
+    Header unset X-Powered-By
+
+    # Prevent clickjacking
+    Header always set X-Frame-Options "SAMEORIGIN"
+
+    # Prevent MIME type sniffing
+    Header always set X-Content-Type-Options "nosniff"
+
+    # XSS Protection
+    Header always set X-XSS-Protection "1; mode=block"
+
+    # Referrer Policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Content Security Policy with nonce support
+    # Note: Nonce must be generated per request in PHP
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'nonce-%{UNIQUE_ID}e' cdn.jsdelivr.net cdn.tailwindcss.com unpkg.com; style-src 'self' 'unsafe-inline' cdn.jsdelivr.net fonts.googleapis.com; font-src 'self' fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.qvtrk.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;"
+    
+    # Permissions Policy (formerly Feature-Policy)
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), usb=(), accelerometer=(), gyroscope=(), magnetometer=(), payment=(), interest-cohort=()"
+
+    # HTTP Strict Transport Security (HSTS)
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+    # Expect-CT Header for Certificate Transparency
+    Header always set Expect-CT "max-age=86400, enforce"
+
+    # CORS Headers (if needed for API)
+    # Header always set Access-Control-Allow-Origin "*"
+    # Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    # Header always set Access-Control-Allow-Headers "Content-Type, X-API-Key, X-CSRF-Token"
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# COMPRESSION (GZIP)
+# ------------------------------------------------------------------------------
+
+<IfModule mod_deflate.c>
+    # Compress HTML, CSS, JavaScript, Text, XML and fonts
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
+    AddOutputFilterByType DEFLATE application/x-font
+    AddOutputFilterByType DEFLATE application/x-font-opentype
+    AddOutputFilterByType DEFLATE application/x-font-otf
+    AddOutputFilterByType DEFLATE application/x-font-truetype
+    AddOutputFilterByType DEFLATE application/x-font-ttf
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE font/opentype
+    AddOutputFilterByType DEFLATE font/otf
+    AddOutputFilterByType DEFLATE font/ttf
+    AddOutputFilterByType DEFLATE image/svg+xml
+    AddOutputFilterByType DEFLATE image/x-icon
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/xml
+
+    # Remove browser bugs (only needed for really old browsers)
+    BrowserMatch ^Mozilla/4 gzip-only-text/html
+    BrowserMatch ^Mozilla/4\.0[678] no-gzip
+    BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+    Header append Vary User-Agent
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# BROWSER CACHING
+# ------------------------------------------------------------------------------
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+
+    # Default expiration: 1 hour
+    ExpiresDefault "access plus 1 hour"
+
+    # HTML: 1 minute
+    ExpiresByType text/html "access plus 1 minute"
+
+    # CSS and JavaScript: 1 year
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType application/x-javascript "access plus 1 year"
+
+    # Images: 1 month
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+
+    # Fonts: 1 year
+    ExpiresByType font/ttf "access plus 1 year"
+    ExpiresByType font/otf "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType application/font-woff "access plus 1 year"
+
+    # Media: 1 month
+    ExpiresByType video/mp4 "access plus 1 month"
+    ExpiresByType video/webm "access plus 1 month"
+    ExpiresByType audio/ogg "access plus 1 month"
+
+    # Documents: 1 week
+    ExpiresByType application/pdf "access plus 1 week"
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Cache-Control headers
+    <FilesMatch "\.(ico|jpg|jpeg|png|gif|webp|svg)$">
+        Header set Cache-Control "max-age=2592000, public"
+    </FilesMatch>
+
+    <FilesMatch "\.(css|js)$">
+        Header set Cache-Control "max-age=31536000, public"
+    </FilesMatch>
+
+    <FilesMatch "\.(html|htm)$">
+        Header set Cache-Control "max-age=60, public, must-revalidate"
+    </FilesMatch>
+
+    # JSON files (including manifest.json)
+    <FilesMatch "\.(json)$">
+        Header set Content-Type "application/json; charset=utf-8"
+        Header set Cache-Control "max-age=86400, public"
+    </FilesMatch>
+
+    # Disable caching for API endpoints
+    <FilesMatch "\.(php)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# ETags (Entity Tags for cache validation)
+# ------------------------------------------------------------------------------
+
+<IfModule mod_headers.c>
+    # Enable ETags
+    FileETag MTime Size
+
+    # Add ETag header
+    <FilesMatch "\.(ico|pdf|flv|jpg|jpeg|png|gif|webp|svg|js|css|swf)$">
+        Header set ETag ""
+    </FilesMatch>
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# PHP SETTINGS
+# ------------------------------------------------------------------------------
+
+<IfModule mod_php.c>
+    # Error reporting (disable in production)
+    php_flag display_errors Off
+    php_flag display_startup_errors Off
+    php_value error_reporting 0
+
+    # Logging
+    php_flag log_errors On
+    php_value error_log logs/php_errors.log
+
+    # Performance
+    php_value memory_limit 256M
+    php_value max_execution_time 30
+    php_value max_input_time 60
+
+    # Uploads
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+
+    # Session
+    php_value session.gc_maxlifetime 3600
+    php_flag session.use_strict_mode On
+    php_flag session.cookie_httponly On
+    php_flag session.cookie_secure On
+    php_value session.cookie_samesite Strict
+
+    # Security
+    php_flag expose_php Off
+    php_flag allow_url_fopen Off
+    php_flag allow_url_include Off
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# FILE ACCESS RESTRICTIONS
+# ------------------------------------------------------------------------------
+
+# Disable directory browsing
+Options -Indexes
+
+# Disable MultiViews
+Options -MultiViews
+
+# Follow symbolic links
+Options +FollowSymLinks
+
+# Deny access to .htaccess and .htpasswd
+<FilesMatch "^\.ht">
+    Require all denied
+</FilesMatch>
+
+# Deny access to configuration files
+<FilesMatch "\.(ini|conf|config)$">
+    Require all denied
+</FilesMatch>
+
+# Deny access to backup files
+<FilesMatch "\.(bak|backup|old|swp|tmp|~)$">
+    Require all denied
+</FilesMatch>
+
+# Deny access to log files
+<FilesMatch "\.(log)$">
+    Require all denied
+</FilesMatch>
+
+# Deny access to SQL files
+<FilesMatch "\.(sql|sqlite|db)$">
+    Require all denied
+</FilesMatch>
+
+# Deny access to .env files
+<FilesMatch "^\.env">
+    Require all denied
+</FilesMatch>
+
+# ------------------------------------------------------------------------------
+# MIME TYPES
+# ------------------------------------------------------------------------------
+
+<IfModule mod_mime.c>
+    # JavaScript
+    AddType application/javascript js
+    AddType application/json json
+    AddType application/manifest+json webmanifest
+
+    # Images
+    AddType image/svg+xml svg svgz
+    AddType image/webp webp
+
+    # Fonts
+    AddType font/ttf ttf
+    AddType font/otf otf
+    AddType font/woff woff
+    AddType font/woff2 woff2
+    AddType application/font-woff woff
+
+    # Video
+    AddType video/mp4 mp4
+    AddType video/webm webm
+
+    # Audio
+    AddType audio/ogg ogg
+    AddType audio/mpeg mp3
+
+    # Other
+    AddType application/pdf pdf
+    AddType text/plain txt
+    AddType text/csv csv
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# CHARACTER ENCODING
+# ------------------------------------------------------------------------------
+
+# Set default charset to UTF-8
+AddDefaultCharset UTF-8
+<IfModule mod_mime.c>
+    AddCharset UTF-8 .html .css .js .xml .json .rss .atom
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# HOTLINK PROTECTION (Prevent bandwidth theft)
+# ------------------------------------------------------------------------------
+
+# <IfModule mod_rewrite.c>
+#     RewriteEngine On
+#     RewriteCond %{HTTP_REFERER} !^$
+#     RewriteCond %{HTTP_REFERER} !^https?://(www\.)?yourdomain\.com [NC]
+#     RewriteCond %{HTTP_REFERER} !^https?://(www\.)?qvtrk\.com [NC]
+#     RewriteRule \.(jpg|jpeg|png|gif|webp|svg|pdf|js|css)$ - [F,NC]
+# </IfModule>
+
+# ------------------------------------------------------------------------------
+# BLOCK BAD BOTS AND SCANNERS
+# ------------------------------------------------------------------------------
+
+<IfModule mod_rewrite.c>
+    # Block bad user agents
+    RewriteCond %{HTTP_USER_AGENT} (360Spider|Alexibot|asterias|attach|BackDoorBot|BackWeb|BlowFish|BotALot|BuiltBotTough|Bullseye|BunnySlippers|ChinaClaw|CopyRightCheck|cosmos|Crescent|Custo|DISCo|DittoSpyder|DownloadsDemon|eCatch|EirGrabber|EmailCollector|EmailSiphon|EmailWolf|EroCrawler|ExtractorPro|EyeNetIE|FlashGet|GetRight|GetWeb!|Go!Zilla|Go-Ahead-Got-It|GrabNet|Grafula|Harvest|hloader|HMView|HTTrack|humanlinks|InfoNaviRobot|IstellaBot|JennyBot|JikeSpider|JOC|k2spider|Kenjin.Spider|larbin|LeechFTP|LinkWalker|lwp-trivial|Massa|Mata.Hari|MegaIndex|MIIxpc|Mister.PiX|moget|MSFrontPage|NetAnts|NetSpider|NetZIP|Nutch|Octopus|PageGrabber|Papa.Foto|pavuk|PECL::HTTP|PeoplePal|portalmmm|psbot|purebot|RealDownload|ReGet|Rippers.0|SeaMonkey$|sitecheck.internetseer.com|SiteSnagger|SmartDownload|Sucker|SuperBot|SuperHTTP|Surfbot|tAkeOut|Teleport.Pro|Telesoft|TheNomad|TightTwatBot|Titan|True_Robot|turingos|TurnitinBot|URLy.Warning|VoidEYE|WebAuto|WebBandit|WebCopier|WebFetch|WebGo.IS|WebLeacher|WebReaper|WebSauger|Website.eXtractor|Website.Quester|Webster.Pro|WebStripper|WebWhacker|WebZIP|Whacker|Widow|WWWOFFLE|Xaldon.WebSpider|Xenu|Zeus) [NC,OR]
+    # Block empty user agents and suspicious referers
+    RewriteCond %{HTTP_USER_AGENT} ^$ [OR]
+    RewriteCond %{HTTP_USER_AGENT} ^(java|curl|wget).* [NC,OR]
+    RewriteCond %{HTTP_REFERER} (semalt.com|buttons-for-website.com|darodar.com|econom.co|ilovevitaly.com|priceg.com|blackhatworth.com|adviceforum.info) [NC]
+    RewriteRule .* - [F,L]
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# DDOS PROTECTION (Basic rate limiting)
+# ------------------------------------------------------------------------------
+
+# Limit request body size (10MB)
+<IfModule mod_reqtimeout.c>
+    RequestReadTimeout header=20-40,MinRate=500 body=20-40,MinRate=500
+</IfModule>
+
+# Limit concurrent connections (if mod_limitipconn is available)
+# <IfModule mod_limitipconn.c>
+#     MaxConnPerIP 20
+# </IfModule>
+
+# ------------------------------------------------------------------------------
+# SERVER SIGNATURE
+# ------------------------------------------------------------------------------
+
+# Disable server signature
+ServerSignature Off
+
+# ------------------------------------------------------------------------------
+# CUSTOM ERROR PAGES
+# ------------------------------------------------------------------------------
+
+# Custom error handler for all HTTP errors
+ErrorDocument 400 /error.php
+ErrorDocument 401 /error.php
+ErrorDocument 403 /error.php
+ErrorDocument 404 /error.php
+ErrorDocument 405 /error.php
+ErrorDocument 408 /error.php
+ErrorDocument 429 /error.php
+ErrorDocument 500 /error.php
+ErrorDocument 502 /error.php
+ErrorDocument 503 /error.php
+ErrorDocument 504 /error.php
+
+# ------------------------------------------------------------------------------
+# DENY ACCESS TO SENSITIVE DIRECTORIES
+# ------------------------------------------------------------------------------
+
+# Deny access to _meetups directory from external requests
+# <Directory "_meetups">
+#     Require all denied
+# </Directory>
+
+# ------------------------------------------------------------------------------
+# CORS CONFIGURATION (For API endpoints)
+# ------------------------------------------------------------------------------
+
+# Enable CORS for specific endpoints (uncomment if needed)
+# <FilesMatch "\.(php)$">
+#     <IfModule mod_headers.c>
+#         Header always set Access-Control-Allow-Origin "*"
+#         Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+#         Header always set Access-Control-Allow-Headers "Content-Type, X-API-Key, X-CSRF-Token, X-Requested-With"
+#         Header always set Access-Control-Max-Age "3600"
+#     </IfModule>
+# </FilesMatch>
+
+# Handle preflight OPTIONS requests
+# <IfModule mod_rewrite.c>
+#     RewriteEngine On
+#     RewriteCond %{REQUEST_METHOD} OPTIONS
+#     RewriteRule ^(.*)$ $1 [R=200,L]
+# </IfModule>
+
+# ==============================================================================
+# END OF PUBLIC .HTACCESS
+# ==============================================================================
+#
+# NOTES:
+# - Adjust CSP (Content-Security-Policy) based on your actual resource URLs
+# - Enable HTTPS redirection in production
+# - Configure custom error pages
+# - Test all configurations thoroughly before deploying
+# - Monitor server logs for any issues
+#
+# PERFORMANCE TIPS:
+# - Enable mod_deflate for compression
+# - Enable mod_expires for caching
+# - Enable mod_headers for security headers
+# - Use CDN for static assets
+# - Optimize images before uploading
+#
+# SECURITY TIPS:
+# - Keep Apache and PHP updated
+# - Use strong passwords for database
+# - Enable HTTPS/SSL
+# - Regular security audits
+# - Monitor access logs
+#
+# ==============================================================================

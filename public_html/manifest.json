@@ -1,0 +1,25 @@
+{
+  "name": "Smart Redirect Platform",
+  "short_name": "SRP",
+  "description": "Route every click to the right destination, without babysitting traffic 24/7.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f6f7f9",
+  "theme_color": "#e5e7eb",
+  "lang": "id",
+  "icons": [
+    {
+      "src": "/assets/icons/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/assets/icons/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

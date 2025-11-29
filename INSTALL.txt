@@ -1,0 +1,41 @@
+===================================================================
+SRP PRODUCTION INSTALLATION GUIDE
+===================================================================
+
+1. Extract all files to your web server
+
+2. Set directory structure:
+   /home/username/
+   ├── public_html/          ← Brand domain webroot
+   ├── public_html_tracking/ ← Tracking domain webroot
+   ├── srp/                  ← Application files (outside webroot)
+   └── storage/              ← Logs and cache
+
+3. Copy .env.template to srp/.env and update:
+   - Database credentials (DB_NAME, DB_USER, DB_PASS)
+   - Domain URLs
+   - API keys (generate new ones!)
+   - Path settings (APP_ROOT, LOG_PATH)
+
+4. Set permissions:
+   chmod 600 srp/.env
+   chmod 755 public_html
+   chmod 755 public_html_tracking
+   chmod 700 srp
+   chmod 777 storage/logs
+   chmod 777 storage/cache
+
+5. Update bootstrap paths in all PHP files:
+   - Replace '/home/username/' with your actual path
+
+6. Import database schema:
+   mysql -u username -p database < database/complete-schema.sql
+
+7. Enable SSL/HTTPS via cPanel AutoSSL
+
+8. Change default admin password immediately!
+   Default: admin / password
+
+9. Test all endpoints
+
+===================================================================

@@ -1,0 +1,14 @@
+SRP Production Build
+====================
+Build Date: Sat, Nov 29, 2025  9:43:47 AM
+Version: 2.1.1
+Build ID: 20251129_094344
+
+Pre-deployment steps:
+1. Update srp/.env.template with production values and rename to .env
+2. Update bootstrap paths in all PHP files
+3. Import database/schema.sql
+4. Set proper file permissions
+5. Configure DNS and SSL
+
+See PRODUCTION_CHECKLIST.md for detailed instructions.
