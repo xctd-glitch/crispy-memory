@@ -31,8 +31,6 @@ class PostbackController
     {
         Session::start();
 
-        header('Content-Type: application/json; charset=utf-8');
-
         $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
         // Handle GET requests (load postback logs)
@@ -47,9 +45,7 @@ class PostbackController
             return;
         }
 
-        http_response_code(405);
-        echo json_encode(['ok' => false, 'error' => 'Method not allowed'], JSON_THROW_ON_ERROR);
-        exit;
+        self::respondError('Method not allowed', 405);
     }
 
     /**
@@ -61,9 +57,7 @@ class PostbackController
     {
         // Check authentication
         if (!Session::isAuthenticated()) {
-            http_response_code(401);
-            echo json_encode(['ok' => false, 'error' => 'Authentication required'], JSON_THROW_ON_ERROR);
-            exit;
+            self::respondError('Authentication required', 401);
         }
 
         // Check if requesting received postbacks
@@ -85,7 +79,7 @@ class PostbackController
             $limit = Validator::sanitizeInt($_GET['limit'] ?? '20', 20, 1, 100);
 
             $logs = PostbackLog::getRecent($limit);
-            echo json_encode(['ok' => true, 'logs' => $logs], JSON_THROW_ON_ERROR);
+            self::respond(['ok' => true, 'logs' => $logs]);
         } catch (\Throwable $e) {
             // Log detailed error untuk debugging
             error_log('PostbackController::getPostbackLogs error: ' . $e->getMessage());
@@ -101,10 +95,8 @@ class PostbackController
                 $errorMessage = 'Database table missing. Run URGENT_FIX_NOW.sql';
             }
 
-            http_response_code(500);
-            echo json_encode(['ok' => false, 'error' => $errorMessage], JSON_THROW_ON_ERROR);
+            self::respondError($errorMessage, 500);
         }
-        exit;
     }
 
     /**
@@ -210,7 +202,7 @@ class PostbackController
             $totalPayout = array_sum(array_column($stats, 'total_payout'));
             $avgDailyPayout = count($stats) > 0 ? $totalPayout / count($stats) : 0;
 
-            echo json_encode([
+            self::respond([
                 'ok' => true,
                 'view' => $view,
                 'stats' => $stats,
@@ -221,13 +213,11 @@ class PostbackController
                     'days_count' => count($stats),
                     'period_days' => $days
                 ]
-            ], JSON_THROW_ON_ERROR);
+            ]);
         } catch (\Throwable $e) {
             error_log('Error loading daily stats: ' . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['ok' => false, 'error' => 'Failed to load daily statistics'], JSON_THROW_ON_ERROR);
+            self::respondError('Failed to load daily statistics', 500);
         }
-        exit;
     }
 
     /**
@@ -265,13 +255,11 @@ class PostbackController
                 $logs[] = $row;
             }
 
-            echo json_encode(['ok' => true, 'logs' => $logs], JSON_THROW_ON_ERROR);
+            self::respond(['ok' => true, 'logs' => $logs]);
         } catch (\Throwable $e) {
             error_log('Error loading received postbacks: ' . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['ok' => false, 'error' => 'Failed to load received postbacks'], JSON_THROW_ON_ERROR);
+            self::respondError('Failed to load received postbacks', 500);
         }
-        exit;
     }
 
     /**
@@ -283,38 +271,28 @@ class PostbackController
     {
         // Check authentication
         if (!Session::isAuthenticated()) {
-            http_response_code(401);
-            echo json_encode(['ok' => false, 'error' => 'Authentication required'], JSON_THROW_ON_ERROR);
-            exit;
+            self::respondError('Authentication required', 401);
         }
 
         // Validate CSRF token
         if (!Csrf::validate(throwOnFailure: false)) {
-            http_response_code(403);
-            echo json_encode(['ok' => false, 'error' => 'CSRF token validation failed'], JSON_THROW_ON_ERROR);
-            exit;
+            self::respondError('CSRF token validation failed', 403);
         }
 
         // Parse JSON body
         $raw = file_get_contents('php://input');
         if ($raw === false || $raw === '') {
-            http_response_code(400);
-            echo json_encode(['ok' => false, 'error' => 'No data provided'], JSON_THROW_ON_ERROR);
-            exit;
+            self::respondError('No data provided', 400);
         }
 
         try {
             $data = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
         } catch (\JsonException $e) {
-            http_response_code(400);
-            echo json_encode(['ok' => false, 'error' => 'Invalid JSON payload'], JSON_THROW_ON_ERROR);
-            exit;
+            self::respondError('Invalid JSON payload', 400);
         }
 
         if (!is_array($data)) {
-            http_response_code(400);
-            echo json_encode(['ok' => false, 'error' => 'Invalid JSON payload'], JSON_THROW_ON_ERROR);
-            exit;
+            self::respondError('Invalid JSON payload', 400);
         }
 
         // Check if this is a test postback request
@@ -341,9 +319,7 @@ class PostbackController
             $cfg = Settings::get();
 
             if (empty($cfg['postback_url'])) {
-                http_response_code(400);
-                echo json_encode(['ok' => false, 'error' => 'Postback URL is not configured'], JSON_THROW_ON_ERROR);
-                exit;
+                self::respondError('Postback URL is not configured', 400);
             }
 
             // Sanitize test parameters
@@ -360,25 +336,21 @@ class PostbackController
 
             // Validate payout range
             if ($payout < 0 || $payout > 10000) {
-                http_response_code(400);
-                echo json_encode(['ok' => false, 'error' => 'Invalid payout value'], JSON_THROW_ON_ERROR);
-                exit;
+                self::respondError('Invalid payout value', 400);
             }
 
             // Send test postback
             $success = PostbackLog::sendPostback($country, $trafficType, $payout, $cfg['postback_url']);
 
             if ($success) {
-                echo json_encode(['ok' => true, 'message' => 'Test postback sent successfully'], JSON_THROW_ON_ERROR);
-            } else {
-                echo json_encode(['ok' => false, 'error' => 'Test postback failed'], JSON_THROW_ON_ERROR);
+                self::respond(['ok' => true, 'message' => 'Test postback sent successfully']);
             }
+
+            self::respondError('Test postback failed', 500);
         } catch (\Throwable $e) {
             error_log('Error in handleTestPostback: ' . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['ok' => false, 'error' => $e->getMessage()], JSON_THROW_ON_ERROR);
+            self::respondError($e->getMessage(), 500);
         }
-        exit;
     }
 
     /**
@@ -395,9 +367,7 @@ class PostbackController
 
             // Validate payout range
             if ($payout < 0 || $payout > 10000) {
-                http_response_code(400);
-                echo json_encode(['ok' => false, 'error' => 'Invalid payout value (must be between 0 and 10000)'], JSON_THROW_ON_ERROR);
-                exit;
+                self::respondError('Invalid payout value (must be between 0 and 10000)', 400);
             }
 
             // Update settings (always enabled)
@@ -406,15 +376,31 @@ class PostbackController
             // Set flash message
             Session::setFlash('success', 'Postback configuration saved successfully.');
 
-            echo json_encode(['ok' => true], JSON_THROW_ON_ERROR);
+            self::respond(['ok' => true]);
         } catch (\InvalidArgumentException $e) {
-            http_response_code(400);
-            echo json_encode(['ok' => false, 'error' => $e->getMessage()], JSON_THROW_ON_ERROR);
+            self::respondError($e->getMessage(), 400);
         } catch (\Throwable $e) {
             error_log('Error in savePostbackConfig: ' . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['ok' => false, 'error' => 'Failed to save postback configuration'], JSON_THROW_ON_ERROR);
+            self::respondError('Failed to save postback configuration', 500);
         }
+    }
+
+    /**
+     * Standardized JSON response helper
+     */
+    private static function respond(array $data, int $statusCode = 200): never
+    {
+        http_response_code($statusCode);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($data, JSON_THROW_ON_ERROR);
         exit;
+    }
+
+    /**
+     * Standardized error response helper
+     */
+    private static function respondError(string $message, int $statusCode = 400): never
+    {
+        self::respond(['ok' => false, 'error' => $message], $statusCode);
     }
 }
