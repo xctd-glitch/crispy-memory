@@ -1,0 +1,126 @@
+# Smart Redirect Platform (SRP) - Git Ignore File
+# Updated: 2025-11-29 (v2.2.1)
+
+# ==================== ENVIRONMENT & SECRETS ====================
+# NEVER commit .env files - they contain database passwords, API keys, etc.
+.env
+.env.*
+!.env.template
+!.env.production
+srp/.env
+srp/.env.local
+srp/.env.*.local
+
+# ==================== DEPENDENCIES ====================
+vendor/
+node_modules/
+bower_components/
+
+# ==================== STORAGE & CACHE ====================
+storage/logs/*.log
+storage/cache/*
+!storage/logs/.gitkeep
+!storage/cache/.gitkeep
+
+# ==================== IDE & EDITOR FILES ====================
+# Visual Studio Code
+.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# PhpStorm / IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Eclipse
+.buildpath
+.project
+.settings/
+
+# NetBeans
+nbproject/
+
+# ==================== OS FILES ====================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# ==================== TEMPORARY FILES ====================
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+# ==================== PHP SPECIFIC ====================
+# Composer
+composer.phar
+composer.lock
+
+# PHPUnit
+.phpunit.result.cache
+phpunit.xml
+coverage/
+
+# ==================== BUILD & DEPLOYMENT ====================
+*.zip
+*.tar
+*.tar.gz
+*.rar
+
+# Production builds
+dist/
+build/
+*.production.zip
+
+# ==================== SECURITY ====================
+# SSL certificates
+*.pem
+*.key
+*.crt
+*.csr
+
+# SSH keys
+id_rsa
+id_rsa.pub
+*.ppk
+
+# ==================== CUSTOM PROJECT ====================
+# Database backups
+*.sql
+*.sql.gz
+db.bak/*.sql
+!db.bak/schema.sql
+
+# Uploaded files (if any)
+uploads/*
+!uploads/.gitkeep
+
+# ==================== DEBUGGING ====================
+error.log
+debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
