@@ -74,11 +74,18 @@ function renderTabButton(array $tab): string
 
     return sprintf(
         '<button
-            @click="activeTab = \'%s\'"
-            class="shrink-0 py-3 px-2 border-b-2 font-medium text-xs transition-colors whitespace-nowrap"
+            @click="navigateToTab(\'%s\')"
+            @keydown.arrow-right.prevent="navigateToTab(getValidTabs()[Math.min(getValidTabs().indexOf(activeTab) + 1, getValidTabs().length - 1)])"
+            @keydown.arrow-left.prevent="navigateToTab(getValidTabs()[Math.max(getValidTabs().indexOf(activeTab) - 1, 0)])"
+            class="shrink-0 py-3 px-2 border-b-2 font-medium text-xs transition-all duration-200 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             :class="activeTab === \'%s\'
                 ? \'border-primary text-primary\'
                 : \'border-transparent text-muted-foreground hover:text-foreground hover:border-border\'"
+            :aria-selected="activeTab === \'%s\' ? \'true\' : \'false\'"
+            :tabindex="activeTab === \'%s\' ? \'0\' : \'-1\'"
+            role="tab"
+            :aria-controls="\'panel-%s\'"
+            :id="\'tab-%s\'"
             type="button">
             <div class="flex items-center gap-1.5">
                 %s
@@ -86,6 +93,10 @@ function renderTabButton(array $tab): string
                 %s
             </div>
         </button>',
+        $tabId,
+        $tabId,
+        $tabId,
+        $tabId,
         $tabId,
         $tabId,
         renderTabIcon($tab['icon']),
