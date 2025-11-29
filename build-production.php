@@ -164,10 +164,23 @@ echo "\n";
 
 // 7. Check .env or config
 echo "▶ Checking environment configuration...\n";
-if (file_exists('.env') || file_exists('srp/config.php')) {
-    echo "  ✓ Environment config found\n";
-} else {
-    $warnings[] = "No .env or config.php found - ensure environment is configured";
+$envCandidates = [
+    '.env',
+    'srp/config.php',
+    'srp/.env.production',
+    'srp/.env.template',
+];
+
+$foundEnv = false;
+foreach ($envCandidates as $envFile) {
+    if (file_exists($envFile)) {
+        $foundEnv = true;
+        echo "  ✓ Environment config found: {$envFile}\n";
+    }
+}
+
+if (!$foundEnv) {
+    $warnings[] = "No environment config detected (.env, config.php, or template) - ensure environment is configured";
 }
 echo "\n";
 
