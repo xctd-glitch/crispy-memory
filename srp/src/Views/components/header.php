@@ -12,7 +12,7 @@
     <link rel="shortcut icon" href="/assets/icons/favicon.ico">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
     <title><?= htmlspecialchars($pageTitle ?? 'SRP Traffic Control', ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5, 'UTF-8'); ?></title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com" nonce="<?= htmlspecialchars($cspNonce ?? '', ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5, 'UTF-8'); ?>"></script>
     <script nonce="<?= htmlspecialchars($cspNonce ?? '', ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5, 'UTF-8'); ?>">
         tailwind.config = {
             theme: {
@@ -67,6 +67,6 @@
         };
     </script>
     <link rel="stylesheet" type="text/css" href="/assets/style.css" id="preload-stylesheet"/>
-    <script src="/pwa/register-sw.js" defer></script>
+    <script src="/pwa/register-sw.js" nonce="<?= htmlspecialchars($cspNonce ?? '', ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5, 'UTF-8'); ?>" defer></script>
 </head>
 <body class="min-h-screen bg-[color:var(--page-bg)] font-sans antialiased flex flex-col text-sm">

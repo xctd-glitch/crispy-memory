@@ -122,14 +122,15 @@ class SecurityHeaders
     private static function applyContentSecurityPolicy(string $nonce, bool $isProduction): void
     {
         if ($isProduction) {
-            // Production CSP (strict, no unsafe-*)
+            // Production CSP dengan Alpine.js & CDN support
+            // NOTE: unsafe-eval diperlukan untuk Alpine.js directive evaluation
             $csp = implode('; ', [
                 "default-src 'self'",
-                "script-src 'self' 'nonce-{$nonce}'",
-                "style-src 'self' 'nonce-{$nonce}'",
+                "script-src 'self' 'nonce-{$nonce}' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://static.cloudflareinsights.com",
+                "style-src 'self' 'nonce-{$nonce}' 'unsafe-inline'", // Tailwind needs unsafe-inline
                 "img-src 'self' data:",
                 "font-src 'self'",
-                "connect-src 'self'",
+                "connect-src 'self' https://cloudflareinsights.com",
                 "form-action 'self'",
                 "frame-ancestors 'none'",
                 "base-uri 'self'",
@@ -140,11 +141,11 @@ class SecurityHeaders
             // Development CSP (sedikit lebih permissive untuk debugging)
             $csp = implode('; ', [
                 "default-src 'self'",
-                "script-src 'self' 'nonce-{$nonce}' 'unsafe-eval'", // unsafe-eval untuk dev tools
+                "script-src 'self' 'nonce-{$nonce}' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://static.cloudflareinsights.com",
                 "style-src 'self' 'nonce-{$nonce}' 'unsafe-inline'", // inline styles untuk rapid dev
                 "img-src 'self' data:",
                 "font-src 'self'",
-                "connect-src 'self'",
+                "connect-src 'self' https://cloudflareinsights.com",
                 "form-action 'self'",
                 "frame-ancestors 'none'",
                 "base-uri 'self'",
@@ -351,14 +352,14 @@ class SecurityHeaders
         self::applyXssProtection();
         self::applyReferrerPolicy();
 
-        // Strict CSP untuk brand domain
+        // CSP untuk brand domain dengan Alpine.js & CDN support
         $csp = implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'nonce-{$cspNonce}'",
-            "style-src 'self' 'nonce-{$cspNonce}'",
+            "script-src 'self' 'nonce-{$cspNonce}' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://static.cloudflareinsights.com",
+            "style-src 'self' 'nonce-{$cspNonce}' 'unsafe-inline'",
             "img-src 'self' data:",
             "font-src 'self'",
-            "connect-src 'self'",
+            "connect-src 'self' https://cloudflareinsights.com",
             "form-action 'self'",
             "frame-ancestors 'none'",
             "base-uri 'self'",
