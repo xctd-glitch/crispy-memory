@@ -68,6 +68,7 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('dash', () => ({
         // Navigation State
         activeTab: 'overview',
+        previousTab: null,
 
         // Configuration State
         cfg: {
@@ -224,6 +225,21 @@ document.addEventListener('alpine:init', () => {
             this.debouncedSaveEnv = debounce(() => this._saveEnvConfig(), 500);
             this.throttledRefresh = throttle(() => this._refresh(), 2000);
             this.debouncedSearch = debounce((term) => this._performSearch(term), 300);
+
+            // Initialize tab state dari URL hash atau localStorage
+            this.initializeTabState();
+
+            // Watch for tab changes dan sync ke URL/localStorage
+            this.$watch('activeTab', (newTab, oldTab) => {
+                if (newTab !== oldTab) {
+                    this.previousTab = oldTab;
+                    this.syncTabState(newTab);
+                    this.onTabChanged(newTab, oldTab);
+                }
+            });
+
+            // Listen for hash changes (browser back/forward)
+            window.addEventListener('hashchange', () => this.handleHashChange());
 
             // Initial data load
             this.refresh();
@@ -1039,9 +1055,130 @@ document.addEventListener('alpine:init', () => {
             document.body.removeChild(textarea);
         },
 
+        // Tab State Management Methods
+        getValidTabs() {
+            return ['overview', 'routing', 'env-config', 'postback', 'statistics', 'logs', 'api-docs'];
+        },
+
+        isValidTab(tab) {
+            return this.getValidTabs().includes(tab);
+        },
+
+        initializeTabState() {
+            // Priority: URL hash > localStorage > default
+            let initialTab = 'overview';
+
+            // Check URL hash first (untuk deep linking)
+            const hash = window.location.hash.slice(1); // Remove #
+            if (hash && this.isValidTab(hash)) {
+                initialTab = hash;
+            } else {
+                // Fallback ke localStorage (user preference)
+                const savedTab = localStorage.getItem('srp_activeTab');
+                if (savedTab && this.isValidTab(savedTab)) {
+                    initialTab = savedTab;
+                }
+            }
+
+            this.activeTab = initialTab;
+
+            // Set initial hash jika belum ada
+            if (!window.location.hash) {
+                window.location.hash = initialTab;
+            }
+        },
+
+        syncTabState(tab) {
+            // Update URL hash (untuk deep linking dan browser history)
+            if (window.location.hash !== '#' + tab) {
+                window.location.hash = tab;
+            }
+
+            // Save ke localStorage (user preference)
+            localStorage.setItem('srp_activeTab', tab);
+        },
+
+        handleHashChange() {
+            const hash = window.location.hash.slice(1);
+            if (hash && this.isValidTab(hash) && hash !== this.activeTab) {
+                this.activeTab = hash;
+            }
+        },
+
+        onTabChanged(newTab, oldTab) {
+            // Smooth scroll to top ketika pindah tab
+            if (oldTab !== null) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // Tab-specific data loading untuk performance
+            switch (newTab) {
+                case 'logs':
+                    // Refresh logs ketika masuk ke tab logs
+                    if (!this.logs.length) {
+                        this.refresh();
+                    }
+                    break;
+
+                case 'postback':
+                    // Load postback data
+                    if (!this.postbackLogs.length) {
+                        this.loadPostbackLogs();
+                    }
+                    if (!this.receivedPostbacks.length) {
+                        this.loadReceivedPostbacks();
+                    }
+                    break;
+
+                case 'statistics':
+                    // Load statistics data
+                    if (!this.dailyStats.length) {
+                        this.loadDailyStats();
+                    }
+                    break;
+
+                case 'env-config':
+                    // Ensure env config is loaded
+                    if (!this.envConfig.DB_NAME) {
+                        this.loadEnvConfig();
+                    }
+                    break;
+            }
+
+            // Trigger custom event untuk analytics atau other integrations
+            window.dispatchEvent(new CustomEvent('srp:tab-changed', {
+                detail: { from: oldTab, to: newTab }
+            }));
+        },
+
+        // Navigate to specific tab programmatically
+        navigateToTab(tabId) {
+            if (this.isValidTab(tabId)) {
+                this.activeTab = tabId;
+            } else {
+                console.warn(`Invalid tab: ${tabId}`);
+            }
+        },
+
+        // Get tab label untuk display
+        getTabLabel(tabId) {
+            const labels = {
+                'overview': 'Overview',
+                'routing': 'Routing Config',
+                'env-config': 'Environment',
+                'postback': 'Postback',
+                'statistics': 'Statistics',
+                'logs': 'Traffic Logs',
+                'api-docs': 'API Docs'
+            };
+            return labels[tabId] || tabId;
+        },
+
         // Add destructor for cleanup when component is destroyed
         destroy() {
             this.cleanup();
+            // Remove hash change listener
+            window.removeEventListener('hashchange', this.handleHashChange);
         }
     }));
 });
